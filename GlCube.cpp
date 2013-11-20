@@ -1,4 +1,4 @@
-// Copyright (C) yyyy  name of author
+// Copyright (C) 2013  Florian GRAGLIA
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -199,10 +199,10 @@ GlCube::next(double in_scale, double in_oxz_angle, double in_oyz_angle)
         ///                  Paiting                   ///
 
         glLoadIdentity();
-        glTranslatef(0.0f, 0.0f, -5.0f);        // Center the cube
+        glTranslatef(0.0f, 0.0f, -5.0f);          // Center the cube
         glRotated(in_oyz_angle, 1.0, 0.0, 0.0);   // Rotation of the cube
         glRotated(in_oxz_angle, 0.0, 1.0, 0.0);   //     ''     ''
-        glScaled(in_scale, in_scale, in_scale);
+        glScaled(in_scale, in_scale, in_scale);   // And the scale (from the mouse event)
 
         glEnable(GL_TEXTURE_2D);
 
