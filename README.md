@@ -15,7 +15,7 @@ Using GlCube
 ToDo
 ----
 
-GlCube use old school texture and glVertex3d functions. We should use better ways.
+GlCube use glVertexPointer and glTexCoordPointer functions. We should use VBO if available on the system.
 
 GlCube screenshots
 ------------------
