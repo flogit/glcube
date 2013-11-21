@@ -14,6 +14,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+#include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
@@ -47,13 +48,19 @@ class GlCube
 
         void next(double in_scale = 1.0, double in_oxz_angle = 0.0, double in_oyz_angle = 0.0);
 
+        unsigned int get_nb_faces() { return 6; }
+
         void destroy();
 
     protected: // methods
 
         bool init_sdl(const std::string& in_title, unsigned int in_width, unsigned int in_height);
-        bool init_gl() const;
+        bool init_gl();
+        void init_gl_data_pointer();
         void set_viewport(unsigned int in_width, unsigned int in_height);
+
+        static void push(std::vector<float>& out_vector, float in_pt1, float in_pt2, float in_pt3);
+        static void push(std::vector<float>& out_vector, float in_pt1, float in_pt2);
 
     protected: // members
 
@@ -67,6 +74,9 @@ class GlCube
         unsigned char* m_p_user_texture[6];
         unsigned int m_texture_width;
         unsigned int m_texture_height;
+
+        std::vector<float>* m_pTexCoords;
+        std::vector<float>* m_pVertices;
 
         GLfloat m_ratio;
 

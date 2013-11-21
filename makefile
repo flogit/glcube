@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-W -g -Wall -ansi -pedantic -I/home/florian/local/include
-LDFLAGS=-lm -lSDL2 -lGL -lGLU -L/home/florian/local/lib
+CFLAGS=-W -g -Wall -ansi -pedantic
+LDFLAGS=-lm -lSDL2 -lGL -lGLU
 EXEC=glcube
 SRC= $(wildcard *.cpp)
 OBJ= $(SRC:.cpp=.o)

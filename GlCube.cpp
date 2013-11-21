@@ -15,6 +15,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include <iostream>
+#include <vector>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
@@ -30,6 +31,8 @@ GlCube::GlCube() :
     m_p_renderer(0),
     m_texture_width(0),
     m_texture_height(0),
+    m_pTexCoords(0),
+    m_pVertices(0),
     m_rotation_x(0.0),
     m_rotation_y(0.0)
 {
@@ -82,7 +85,7 @@ GlCube::init_sdl(const std::string& in_title, unsigned int in_width, unsigned in
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 bool
-GlCube::init_gl() const
+GlCube::init_gl()
 {
     glShadeModel(GL_SMOOTH);
 
@@ -102,9 +105,61 @@ GlCube::init_gl() const
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glDisable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+
+    init_gl_data_pointer();
 
     return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+void
+GlCube::init_gl_data_pointer()
+{
+    m_pTexCoords = new std::vector<float>();
+    for (unsigned int i = 0; i < 3; ++i)
+    {
+        push(*m_pTexCoords, 0.0, 0.0); // Direct tex coord
+        push(*m_pTexCoords, 1.0, 0.0);
+        push(*m_pTexCoords, 0.0, 1.0);
+        push(*m_pTexCoords, 1.0, 1.0);
+        push(*m_pTexCoords, 0.0, 0.0); // Indirect tex coord
+        push(*m_pTexCoords, 0.0, 1.0);
+        push(*m_pTexCoords, 1.0, 0.0);
+        push(*m_pTexCoords, 1.0, 1.0);
+    }
+    glTexCoordPointer(2, GL_FLOAT, 0, &m_pTexCoords->at(0));
+
+    m_pVertices = new std::vector<float>();
+    push(*m_pVertices, -1.0f, -1.0f, -1.0f); // Face 0
+    push(*m_pVertices,  1.0f, -1.0f, -1.0f);
+    push(*m_pVertices, -1.0f,  1.0f, -1.0f);
+    push(*m_pVertices,  1.0f,  1.0f, -1.0f);
+    push(*m_pVertices, -1.0f, -1.0f,  1.0f); // Face 1
+    push(*m_pVertices, -1.0f,  1.0f,  1.0f);
+    push(*m_pVertices,  1.0f, -1.0f,  1.0f);
+    push(*m_pVertices,  1.0f,  1.0f,  1.0f);
+    push(*m_pVertices, -1.0f,  1.0f, -1.0f); // Face 2
+    push(*m_pVertices,  1.0f,  1.0f, -1.0f);
+    push(*m_pVertices, -1.0f,  1.0f,  1.0f);
+    push(*m_pVertices,  1.0f,  1.0f,  1.0f);
+    push(*m_pVertices, -1.0f, -1.0f, -1.0f); // Face 3
+    push(*m_pVertices, -1.0f, -1.0f,  1.0f);
+    push(*m_pVertices,  1.0f, -1.0f, -1.0f);
+    push(*m_pVertices,  1.0f, -1.0f,  1.0f);
+    push(*m_pVertices, -1.0f, -1.0f, -1.0f); // Face 4
+    push(*m_pVertices, -1.0f,  1.0f, -1.0f);
+    push(*m_pVertices, -1.0f, -1.0f,  1.0f);
+    push(*m_pVertices, -1.0f,  1.0f,  1.0f);
+    push(*m_pVertices,  1.0f, -1.0f, -1.0f); // Face 5
+    push(*m_pVertices,  1.0f, -1.0f,  1.0f);
+    push(*m_pVertices,  1.0f,  1.0f, -1.0f);
+    push(*m_pVertices,  1.0f,  1.0f,  1.0f);
+    glVertexPointer  (3, GL_FLOAT, 0, &m_pVertices ->at(0));
+
+    ///@todo What about normal...
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,6 +224,25 @@ GlCube::init(const std::string& in_window_title,
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+void
+GlCube::push(std::vector<float>& out_vector, float in_pt1, float in_pt2, float in_pt3)
+{
+    out_vector.push_back(in_pt1);
+    out_vector.push_back(in_pt2);
+    out_vector.push_back(in_pt3);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+void
+GlCube::push(std::vector<float>& out_vector, float in_pt1, float in_pt2)
+{
+    out_vector.push_back(in_pt1);
+    out_vector.push_back(in_pt2);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 unsigned char**
 GlCube::get_textures()
 {
@@ -180,7 +254,7 @@ GlCube::get_textures()
     }
     else
     {
-        std::cerr << "Try toget texture of non initialized class" << std::endl;
+        std::cerr << "Try to get texture of non initialized class" << std::endl;
     }
 
     return pp_user_texture;
@@ -195,9 +269,6 @@ GlCube::next(double in_scale, double in_oxz_angle, double in_oyz_angle)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /// ****************************************** ///
-        ///                  Paiting                   ///
-
         glLoadIdentity();
         glTranslatef(0.0f, 0.0f, -5.0f);          // Center the cube
         glRotated(in_oyz_angle, 1.0, 0.0, 0.0);   // Rotation of the cube
@@ -205,79 +276,21 @@ GlCube::next(double in_scale, double in_oxz_angle, double in_oyz_angle)
         glScaled(in_scale, in_scale, in_scale);   // And the scale (from the mouse event)
 
         glEnable(GL_TEXTURE_2D);
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_texture_width, m_texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_p_user_texture[0]);
-        glNormal3d(0.0, 0.0, -1.0);
-        glBegin(GL_TRIANGLE_STRIP);
+        for (unsigned int i = 0; i < get_nb_faces(); ++i)
         {
-            glTexCoord2d(0.0, 0.0); glVertex3f(-1.0f, -1.0f, -1.0f);
-            glTexCoord2d(1.0, 0.0); glVertex3f( 1.0f, -1.0f, -1.0f);
-            glTexCoord2d(0.0, 1.0); glVertex3f(-1.0f,  1.0f, -1.0f);
-            glTexCoord2d(1.0, 1.0); glVertex3f( 1.0f,  1.0f, -1.0f);
+            // Apply texture
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_texture_width, m_texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_p_user_texture[i]);
+            // And draw from the vertex & tex coord array initialized in GlCube::init_gl_data()
+            glDrawArrays(GL_TRIANGLE_STRIP, 4 * i, 4);
         }
-        glEnd();
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_texture_width, m_texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_p_user_texture[1]);
-        glNormal3d(0.0, 0.0, 1.0);
-        glBegin(GL_TRIANGLE_STRIP);
-        {
-            glTexCoord2d(0.0, 0.0); glVertex3f(-1.0f, -1.0f,  1.0f);
-            glTexCoord2d(0.0, 1.0); glVertex3f(-1.0f,  1.0f,  1.0f);
-            glTexCoord2d(1.0, 0.0); glVertex3f( 1.0f, -1.0f,  1.0f);
-            glTexCoord2d(1.0, 1.0); glVertex3f( 1.0f,  1.0f,  1.0f);
-        }
-        glEnd();
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_texture_width, m_texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_p_user_texture[2]);
-        glNormal3d(0.0, 1.0, 0.0);
-        glBegin(GL_TRIANGLE_STRIP);
-        {
-            glTexCoord2d(0.0, 0.0); glVertex3f(-1.0f,  1.0f, -1.0f);
-            glTexCoord2d(1.0, 0.0); glVertex3f( 1.0f,  1.0f, -1.0f);
-            glTexCoord2d(0.0, 1.0); glVertex3f(-1.0f,  1.0f,  1.0f);
-            glTexCoord2d(1.0, 1.0); glVertex3f( 1.0f,  1.0f,  1.0f);
-        }
-        glEnd();
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_texture_width, m_texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_p_user_texture[3]);
-        glNormal3d(0.0, -1.0, 0.0);
-        glBegin(GL_TRIANGLE_STRIP);
-        {
-            glTexCoord2d(0.0, 0.0); glVertex3f(-1.0f, -1.0f, -1.0f);
-            glTexCoord2d(0.0, 1.0); glVertex3f(-1.0f, -1.0f,  1.0f);
-            glTexCoord2d(1.0, 0.0); glVertex3f( 1.0f, -1.0f, -1.0f);
-            glTexCoord2d(1.0, 1.0); glVertex3f( 1.0f, -1.0f,  1.0f);
-        }
-        glEnd();
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_texture_width, m_texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_p_user_texture[4]);
-        glNormal3d(-1.0, 0.0, 0.0);
-        glBegin(GL_TRIANGLE_STRIP);
-        {
-            glTexCoord2d(0.0, 0.0); glVertex3f(-1.0f, -1.0f, -1.0f);
-            glTexCoord2d(1.0, 0.0); glVertex3f(-1.0f,  1.0f, -1.0f);
-            glTexCoord2d(0.0, 1.0); glVertex3f(-1.0f, -1.0f,  1.0f);
-            glTexCoord2d(1.0, 1.0); glVertex3f(-1.0f,  1.0f,  1.0f);
-        }
-        glEnd();
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_texture_width, m_texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_p_user_texture[5]);
-        glNormal3d(1.0, 0.0, 0.0);
-        glBegin(GL_TRIANGLE_STRIP);
-        {
-            glTexCoord2d(0.0, 0.0); glVertex3f( 1.0f, -1.0f, -1.0f);
-            glTexCoord2d(0.0, 1.0); glVertex3f( 1.0f, -1.0f,  1.0f);
-            glTexCoord2d(1.0, 0.0); glVertex3f( 1.0f,  1.0f, -1.0f);
-            glTexCoord2d(1.0, 1.0); glVertex3f( 1.0f,  1.0f,  1.0f);
-        }
-        glEnd();
-
+        glDisableClientState(GL_VERTEX_ARRAY);
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glDisable(GL_TEXTURE_2D);
 
-        ///                 /Paiting                   ///
-        /// ****************************************** ///
-
-        /// Render
         SDL_RenderPresent(m_p_renderer);
     }
     else
