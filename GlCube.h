@@ -15,8 +15,17 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include <vector>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+
+#ifdef __APPLE__
+ #include "TargetConditionals.h"
+ #ifdef TARGET_OS_MAC
+  #include <SDL.h>
+  #include <SDL_opengl.h>
+ #endif
+#else
+ #include <SDL2/SDL.h>
+ #include <SDL2/SDL_opengl.h>
+#endif
 
 class GlCube
 {

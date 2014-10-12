@@ -17,9 +17,18 @@
 #include <iostream>
 #include <vector>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
-#include <GL/glu.h>
+#ifdef __APPLE__
+ #include "TargetConditionals.h"
+ #ifdef TARGET_OS_MAC
+  #include <SDL.h>
+  #include <SDL_opengl.h>
+  #include <glu.h>
+ #endif
+#else
+ #include <SDL2/SDL.h>
+ #include <SDL2/SDL_opengl.h>
+ #include <GL/glu.h>
+#endif
 
 #include "GlCube.h"
 
