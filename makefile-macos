@@ -1,0 +1,33 @@
+#
+# build glcube on Mac OSX
+#
+#  $ make -f makefile-macos
+#
+
+CXX = clang++
+
+SDL = -framework SDL2
+GLU = -framework OpenGL
+
+# Change paths below to your environment
+INC_SDL2 = ~/Library/Frameworks/SDL2.framework/Headers
+INC_GLU = /System/Library/Frameworks/OpenGL.framework/Headers/
+
+CXXFLAGS = -Wall -c -DHAVE_OPENGL -std=c++11 -I $(INC_SDL2) -I $(INC_GLU)
+LDFLAGS = $(SDL) $(GLU) -F /System/Library/Frameworks -F ~/Library/Frameworks/
+
+binary = macos-glcube
+
+all: $(binary)
+
+$(binary): main.o GlCube.o
+	$(CXX) $(LDFLAGS) main.o GlCube.o -o $@
+
+main.o: main.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+GlCube.o: GlCube.cpp GlCube.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+clean:
+	rm *.o && rm $(EXE)
